@@ -1,0 +1,42 @@
+---
+- name: PHASE 3 - Déploiement des conteneurs SAE502
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    docker_network: sae502_saubin
+    ssh_image: sae502_ssh_base
+
+    containers:
+      - { name: mariadb, image: mariadb:10.5, ports: ["3306:3306"] }
+      - { name: glpi-web, image: "{{ ssh_image }}", ports: ["8081:80", "2201:22"] }
+      - { name: centreon-master, image: "{{ ssh_image }}", ports: ["8082:80", "2202:22"] }
+      - { name: centreon-collector, image: "{{ ssh_image }}", ports: ["2203:22"] }
+      - { name: web-test, image: "{{ ssh_image }}", ports: ["8080:80", "2204:22"] }
+      - { name: backup, image: "{{ ssh_image }}", ports: ["2205:22"] }
+
+  tasks:
+
+    - name: Créer le réseau Docker
+      community.docker.docker_network:
+        name: "{{ docker_network }}"
+        state: present
+
+    - name: Construire l'image SSH de base
+      community.docker.docker_image:
+        name: "{{ ssh_image }}"
+        build:
+          path: "../docker/ssh-base"
+        source: build
+
+    - name: Lancer les conteneurs
+      community.docker.docker_container:
+        name: "{{ item.name }}"
+        image: "{{ item.image }}"
+        state: started
+        restart_policy: unless-stopped
+        networks:
+          - name: "{{ docker_network }}"
+        published_ports: "{{ item.ports }}"
+      loop: "{{ containers }}"
