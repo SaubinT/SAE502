@@ -9,12 +9,36 @@
     ssh_image: sae502_ssh_base
 
     containers:
-      - { name: mariadb, image: mariadb:10.5, ports: ["3306:3306"] }
-      - { name: glpi-web, image: "{{ ssh_image }}", ports: ["8081:80", "2201:22"] }
-      - { name: centreon-master, image: "{{ ssh_image }}", ports: ["8082:80", "2202:22"] }
-      - { name: centreon-collector, image: "{{ ssh_image }}", ports: ["2203:22"] }
-      - { name: web-test, image: "{{ ssh_image }}", ports: ["8080:80", "2204:22"] }
-      - { name: backup, image: "{{ ssh_image }}", ports: ["2205:22"] }
+      # ---- MariaDB (service, pas SSH) ----
+      - name: mariadb
+        image: mariadb:10.5
+        ports: ["3306:3306"]
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+          MYSQL_DATABASE: glpidb
+          MYSQL_USER: glpi
+          MYSQL_PASSWORD: glpipass
+
+      # ---- Conteneurs SSH administrés par Ansible ----
+      - name: glpi-web
+        image: "{{ ssh_image }}"
+        ports: ["8081:80", "2201:22"]
+
+      - name: centreon-master
+        image: "{{ ssh_image }}"
+        ports: ["8082:80", "2202:22"]
+
+      - name: centreon-collector
+        image: "{{ ssh_image }}"
+        ports: ["2203:22"]
+
+      - name: web-test
+        image: "{{ ssh_image }}"
+        ports: ["8080:80", "2204:22"]
+
+      - name: backup
+        image: "{{ ssh_image }}"
+        ports: ["2205:22"]
 
   tasks:
 
@@ -39,4 +63,5 @@
         networks:
           - name: "{{ docker_network }}"
         published_ports: "{{ item.ports }}"
+        env: "{{ item.env | default(omit) }}"
       loop: "{{ containers }}"
