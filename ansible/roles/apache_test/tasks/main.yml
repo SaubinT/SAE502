@@ -1,0 +1,28 @@
+---
+- name: Installer Apache
+  apt:
+    name: apache2
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Activer Apache au démarrage
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Créer une page de test
+  copy:
+    dest: /var/www/html/index.html
+    content: |
+      <html>
+      <head><title>SAE502 - Web Test</title></head>
+      <body>
+        <h1>Serveur web-test Operationnel</h1>
+        <p>Supervise par Centreon via SNMP</p>
+      </body>
+      </html>
+  become: yes
+

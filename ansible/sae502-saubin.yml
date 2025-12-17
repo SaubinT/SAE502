@@ -1,11 +1,14 @@
 ---
-- name: Configuration commune des conteneurs SAE502
-  hosts:
-    - glpiweb
-    - centreonmaster
-    - centreoncollector
-    - webtest
-    - backup
+- name: Configuration commune
+  hosts: glpiweb,centreonmaster,centreoncollector,webtest,backup
   become: yes
   roles:
     - common
+
+- name: Serveur web de test
+  hosts: webtest
+  become: yes
+  roles:
+    - apache_test
+    - snmp_agent
+

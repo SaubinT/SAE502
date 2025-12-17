@@ -1,0 +1,35 @@
+---
+- name: Installer SNMP
+  apt:
+    name:
+      - snmp
+      - snmpd
+      - libsnmp-dev
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Sauvegarder la configuration SNMP existante
+  copy:
+    src: /etc/snmp/snmpd.conf
+    dest: /etc/snmp/snmpd.conf.bak
+    remote_src: yes
+  become: yes
+  ignore_errors: yes
+
+- name: Configurer SNMPD
+  copy:
+    dest: /etc/snmp/snmpd.conf
+    content: |
+      agentAddress udp:161
+      rocommunity sae502
+      view   systemonly  included   .1
+  become: yes
+
+- name: Redémarrer SNMPD
+  service:
+    name: snmpd
+    state: restarted
+    enabled: yes
+  become: yes
+
