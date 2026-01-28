@@ -12,3 +12,8 @@
     - apache_test
     - snmp_agent
 
+- name: Configuration MariaDB
+  hosts: localhost
+  connection: local
+  roles:
+    - mariadb

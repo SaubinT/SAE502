@@ -7,11 +7,12 @@
   vars:
     docker_network: sae502_saubin
     ssh_image: sae502_ssh_base
+    docker_host: unix:///var/run/docker.sock
 
     containers:
       # ---- MariaDB (service, pas SSH) ----
       - name: mariadb
-        image: mariadb:10.5
+        image: mariadb:10.11
         ports: ["3306:3306"]
         env:
           MYSQL_ROOT_PASSWORD: rootpass
@@ -19,10 +20,17 @@
           MYSQL_USER: glpi
           MYSQL_PASSWORD: glpipass
 
-      # ---- Conteneurs SSH administrés par Ansible ----
       - name: glpi-web
-        image: "{{ ssh_image }}"
-        ports: ["8081:80", "2201:22"]
+        image: glpi/glpi:latest
+        ports: ["8081:80"]
+        env:
+          GLPI_DB_HOST: mariadb
+          GLPI_DB_NAME: glpidb
+          GLPI_DB_USER: glpi
+          GLPI_DB_PASSWORD: glpipass
+        volumes:
+          - glpi_data:/var/www/html/glpi
+
 
       - name: centreon-master
         image: "{{ ssh_image }}"
@@ -65,3 +73,8 @@
         published_ports: "{{ item.ports }}"
         env: "{{ item.env | default(omit) }}"
       loop: "{{ containers }}"
+
+    - name: Créer le volume GLPI
+      community.docker.docker_volume:
+        name: glpi_data
+        state: present

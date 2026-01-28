@@ -1,0 +1,29 @@
+---
+- name: Installer client MariaDB
+  apt:
+    name: mariadb-client
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Créer la base Centreon
+  community.mysql.mysql_db:
+    name: centreon
+    state: present
+    login_host: 127.0.0.1
+    login_port: 3306
+    login_user: root
+    login_password: rootpass
+
+- name: Créer l'utilisateur Centreon
+  community.mysql.mysql_user:
+    name: centreon
+    password: centreonpass
+    priv: "centreon.*:ALL"
+    host: "%"
+    state: present
+    login_host: 127.0.0.1
+    login_port: 3306
+    login_user: root
+    login_password: rootpass
+
