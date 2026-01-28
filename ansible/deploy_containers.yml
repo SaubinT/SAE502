@@ -31,10 +31,11 @@
         volumes:
           - glpi_data:/var/www/html/glpi
 
-
       - name: centreon-master
-        image: "{{ ssh_image }}"
-        ports: ["8082:80", "2202:22"]
+        image: jasonrivers/nagios:latest
+        ports:
+          - "8082:80"
+
 
       - name: centreon-collector
         image: "{{ ssh_image }}"

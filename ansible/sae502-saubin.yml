@@ -17,3 +17,8 @@
   connection: local
   roles:
     - mariadb
+
+- name: Déploiement Centreon Master
+  hosts: centreonmaster
+  roles:
+    - centreon_master

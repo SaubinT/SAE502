@@ -1,0 +1,30 @@
+---
+- name: Installer dépendances système
+  apt:
+    update_cache: yes
+    name:
+      - wget
+      - lsb-release
+      - ca-certificates
+      - gnupg
+    state: present
+
+- name: Ajouter le dépôt Centreon
+  shell: |
+    wget -O /tmp/centreon-release.sh https://packages.centreon.com/centreon-release.sh
+    bash /tmp/centreon-release.sh
+  args:
+    creates: /etc/apt/sources.list.d/centreon.list
+
+- name: Installer Centreon Web
+  apt:
+    update_cache: yes
+    name:
+      - centreon
+    state: present
+
+- name: Activer Apache
+  service:
+    name: apache2
+    state: started
+    enabled: yes
